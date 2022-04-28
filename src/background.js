@@ -32,6 +32,36 @@ async function createWindow() {
     // Load the index.html when not in development
     win.loadURL('app://./index.html');
   }
+
+  return win;
+}
+
+async function createChild(parent) {
+  console.debug('PARENT WINDOW', { parent });
+
+  const win = new BrowserWindow({
+    parent,
+    width: 800,
+    height: 600,
+    modal: true,
+    webPreferences: {
+      enablePreferredSizeMode: true,
+    },
+  });
+
+  win.webContents.on('preferred-size-changed', (_event, { width, height }) => {
+    console.debug('PREFERRED SIZE CHANGED', { width, height });
+    win.setSize(width, height);
+  });
+
+  if (process.env.WEBPACK_DEV_SERVER_URL) {
+    // Load the url of the dev server if in development mode
+    await win.loadURL(`${process.env.WEBPACK_DEV_SERVER_URL}#about`);
+  } else {
+    createProtocol('app');
+    // Load the index.html when not in development
+    win.loadURL('app://./index.html#about');
+  }
 }
 
 // Quit when all windows are closed.
@@ -61,7 +91,8 @@ app.on('ready', async () => {
       console.error('Vue Devtools failed to install:', e.toString());
     }
   }
-  createWindow();
+  const parent = await createWindow();
+  createChild(parent);
 });
 
 // Exit cleanly on request from parent process in development mode.

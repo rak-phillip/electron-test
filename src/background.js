@@ -44,14 +44,14 @@ async function createChild(parent) {
     width: 800,
     height: 600,
     modal: true,
+    useContentSize: true,
     webPreferences: {
       enablePreferredSizeMode: true,
     },
   });
 
   win.webContents.on('preferred-size-changed', (_event, { width, height }) => {
-    console.debug('PREFERRED SIZE CHANGED', { width, height });
-    win.setSize(width, height);
+    win.setContentSize(width, height);
   });
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
